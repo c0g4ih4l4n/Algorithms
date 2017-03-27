@@ -99,6 +99,10 @@ class Population {
 	ArrayList<Mutation> mutations;
 	ArrayList<Hybrid> 	hybrids;
 	
+	// number generation
+	// for terminate condition
+	int                 numberGeneration;
+	
 	// initialize random state
 	public Population (int n) {
 		list 		= new ArrayList<>();
@@ -109,6 +113,7 @@ class Population {
 			State state = new State (n); Init.initRandomState (state);
 			list.add (state);
 		}
+		numberGeneration = 1;
 	}
 	 
 	// calculate TSP value of all instance 
@@ -116,13 +121,11 @@ class Population {
 	// avgTSP = avg (top 20 tspValue State of Population)
 	// easy = avg (all State);
 	public void calculateTSP (int[][] a) {
-		int length 	= this.list.size();
-		int sum 	= 0;
+		int length = this.list.size();
 		
 		// instance
 		for (int i = 0; i < length; i++) {
 			this.list.get(i).calculateTSP (a);
-			sum += this.list.get(i).tspValue;
 		}
 		
 
@@ -132,9 +135,11 @@ class Population {
 		int length = this.list.size();
 		int sum = 0;
 		Iterator iterator = this.list.iterator();
+		
 		while (iterator.hasNext()) {
 			State element = (State) iterator.next();
-			sum += element.tspValue;
+			if (element.tspValue == -1) length --;
+			else sum += element.tspValue;
 		}
 		
 		// Population
@@ -271,6 +276,8 @@ class Population {
 		this.select ();
 		this.calcAvgTSP (a);
 		
+		// increase number generation
+		this.numberGeneration ++;
 	}
 	
 	// get result
@@ -467,7 +474,8 @@ class Function {
 	// terminate condition:
 	// delta < Constant.delta
 	public static boolean checkTerminate (Population population) {
-		if (population.delta < Const.DELTA) 
+		if (population.delta < Const.DELTA 
+		    && population.numberGeneration > Const. numberGeneration) 
 			return false;
 		return true;
 	}
