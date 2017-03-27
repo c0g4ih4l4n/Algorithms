@@ -54,7 +54,7 @@ class Init {
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) {
 				if (i == j) {
-					a[i][j] = 10000;
+					a[i][j] = -1;
 				} else a[i][j] = (int) (Math.random() * 100);	
 			}
 		}
@@ -69,6 +69,7 @@ class Init {
 	}
 	
 	// initialize random combination State
+	// for population
 	public static void initRandomState (State state) {
 		int n = state.x.length;
 		List<Integer> list = new ArrayList<>();
