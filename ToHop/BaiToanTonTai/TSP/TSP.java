@@ -5,25 +5,6 @@ import java.util.*;
 // using loop
 
 public class TSP {
-	/**
-	public static void main (String[] args) {
-		int n = 6;
-		int[][] a = new int[n][n];
-		
-		Init.initCost (a, n);
-		
-		State loopState = new State (n);
-		Init.initState (loopState);
-		State result = new State (n); 
-		Init.initState (result); result.calculateTSP (a);
-		
-		do {
-			loopState.calculateTSP (a);
-			State.updateResult (result, loopState);
-		} while (loopState.nextState());
-		result.print();
-	}
-	**/
 	
 	public static void main (String[] args) {
 		int n = 10;
@@ -31,11 +12,15 @@ public class TSP {
 		
 		Init.initCost (a, n);
 		
+
+
 		State loopState = new State (n);
 		Init.initState (loopState);
 		State result = new State (n); 
 		Init.initState (result); result.calculateTSP (a);
 		
+
+		// loop all element
 		do {
 			loopState.calculateTSP (a);
 			State.updateResult (result, loopState);
@@ -44,6 +29,8 @@ public class TSP {
 		
 		System.out.println ();
 		
+
+
 		// use Population
 		Population population = new Population (n);
 		population.calculateTSP (a);
@@ -300,6 +287,8 @@ class Population {
 }
 
 
+
+
 class Mutation {
 	State instance;
 	
@@ -324,6 +313,8 @@ class Mutation {
 		return child;
 	}
 }
+
+
 
 class Hybrid {
 	State parent1;
@@ -409,6 +400,8 @@ class State {
 		return true;
 	}
 	
+
+	// Print Result
 	public void print () {
 		System.out.print ("State : ");
 		int n = x.length;
@@ -423,6 +416,8 @@ class State {
 	
 }
 
+
+// fundamental function
 class Function {
 	public static void swap (int[] a, int i, int j) {
 		int temp = a[i];
@@ -522,6 +517,9 @@ class Function {
 		return false;
 	}
 }
+
+
+// Const of program
 
 class Const {
 	static final int numberOfInstance = 100;
