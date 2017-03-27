@@ -373,9 +373,14 @@ class State {
 		int n = this.x.length;
 		
 		for (int i = 0; i < n - 1; i++) {
+		    if (a[x[i]][x[i+1]] == -1) {
+		        tspValue = -1;
+		        break;
+		    }
 			tspValue += a[x[i]][x[i+1]];
 		}
-		tspValue += a[x[n-1]][x[0]];
+		if (tspValue == -1);
+		else tspValue += a[x[n-1]][x[0]];
 		
 		this.tspValue = tspValue;
 	}
