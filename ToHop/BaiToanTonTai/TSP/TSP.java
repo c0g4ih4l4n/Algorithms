@@ -7,7 +7,7 @@ import java.util.*;
 public class TSP {
 
 	public static void main (String[] args) {
-		int n = 10;
+		int n     = 10;
 		int[][] a = new int[n][n];
 
 		Init.initCost (a, n);
@@ -40,9 +40,42 @@ public class TSP {
 			loop ++;
 			population.generate (a);
 		} while (loop < 500);
+
 		System.out.println ("AVG TSP : " + population.avgTSP);
 		State resultGA = population.getBestState ();
 		resultGA.print();
+
+
+		// use DGEA
+		Population populationDGEA = new Population (n);
+		populationDGEA.calculateTSP (a);
+
+
+
+		loop = 0;
+		String mode;
+		mode = "Expolit";
+		double dlow, dhigh;
+		dlow  = 0.5;
+		dhigh = 2;
+
+		while (loop < 50000) {
+			loop ++;
+
+			double diversityValue = Function.calcDiversity (populationDGEA);
+
+			if (diversityValue < dlow)
+				mode = "Explore";
+			else if (diversityValue > dhigh)
+				mode = "Exploit";
+
+			populationDGEA.generateDEGA (mode, a);
+		}
+
+		System.out.println ("AVG TSP : " + populationDGEA.avgTSP);
+		State resultDEGA = populationDGEA.getBestState ();
+		resultDEGA.print();
+
 	}
 }
 
@@ -143,13 +176,13 @@ class Population {
 		}
 
 		// Population
-		double oldAvgTSP 	= this.avgTSP;
-		this.avgTSP 	= (double) sum / length;
+		double oldAvgTSP = this.avgTSP;
+		this.avgTSP      = (double) sum / length;
 
 		if (oldAvgTSP == 0)
 			this.delta = this.avgTSP;
 		else
-			this.delta 		= oldAvgTSP - this.avgTSP;
+			this.delta = oldAvgTSP - this.avgTSP;
 	}
 
 	public void selectParent () {
@@ -280,6 +313,36 @@ class Population {
 		this.numberGeneration ++;
 	}
 
+
+	public void generateGenerationDEGA (int[][] a) {
+
+		this.generateGeneration ();
+
+
+
+	}
+	// generate next generation using DEGA
+	public void generateDEGA (String mode, int[][] a) {
+		this.selectParent ();
+		this.setGenerateMethod ();
+
+		if (mode == "Exploit") {
+			this.combine ();
+			System.out.println("Enter Expolit");
+		}
+		else if (mode == "Explore") {
+			this.mutate ();
+			System.out.println("Enter Explore");
+		}
+
+		this.calculateTSP (a);
+		this.select ();
+		this.calcAvgTSP (a);
+
+		// increase number generation
+		this.numberGeneration ++;
+	}
+
 	// get result
 	public State getBestState () {
 		return this.list.get(0);
@@ -305,13 +368,17 @@ class Mutation {
 	}
 
 	public State mutate () {
-		int n = this.instance.x.length;
+		int n       = this.instance.x.length;
 		State child = new State(n);
 		Random rand = new Random();
-		int point2 = rand.nextInt (n);
+		int point2  = rand.nextInt (n);
+
 		while (point2 < n / 2) {point2 = rand.nextInt (n);}
+
 		int point1 = rand.nextInt (point2);
+
 		while (point1 == 0) {point1 = rand.nextInt (point2);}
+
 		for (int i = 0; i < n; i++) {
 			child.x[i] = this.instance.x[i];
 		}
@@ -340,7 +407,7 @@ class Hybrid {
 		State child2 		= new State (n);
 
 		Random rand = new Random();
-		int point = rand.nextInt (n);
+		int point   = rand.nextInt (n);
 		while (point == 0 || point == n) {point = rand.nextInt (n);};
 
 		for (int i = 0; i < point; i++) {
@@ -395,7 +462,9 @@ class State {
 	public static void updateResult (State result, State newState) {
 		if (result.tspValue > newState.tspValue) {
 			int n = result.x.length;
+
 			for (int i = 0; i < n; i++) result.x[i] = newState.x[i];
+
 			result.tspValue = newState.tspValue;
 		}
 	}
@@ -404,12 +473,17 @@ class State {
 	public boolean nextState () {
 		int n = this.x.length;
 		int i = n - 1;
+
 		while (i > 0 && this.x[i-1] > this.x[i]) {i--;}
+
 		if (i <= 0) return false;
-		i = i - 1;
+
+		i     = i - 1;
 		int j = Function.findMinPosition(this.x, i);
+
 		Function.swap (this.x, i, j);
 		Function.reverse (this.x, i + 1);
+
 		return true;
 	}
 
@@ -418,6 +492,7 @@ class State {
 	public void print () {
 		System.out.print ("State : ");
 		int n = x.length;
+
 		for (int i = 0; i < n; i++) {
 			System.out.print (" " + x[i]);
 		}
@@ -434,17 +509,17 @@ class State {
 class Function {
 	public static void swap (int[] a, int i, int j) {
 		int temp = a[i];
-		a[i] = a[j];
-		a[j] = temp;
+		a[i]     = a[j];
+		a[j]     = temp;
 	}
 
 	// return value of position have value minimum greater than min
 	// start: positon start
 	public static int findMinPosition (int[] a, int start) {
-		int n = a.length;
+		int n      = a.length;
 		int minset = a[start];
-		int min = n;
-		int jmin = start + 1;
+		int min    = n;
+		int jmin   = start + 1;
 
 		for (int j = start + 1; j < n; j++) {
 			if (a[j] < min && a[j] > minset) {jmin = j; min = a[j];}
@@ -530,6 +605,173 @@ class Function {
 		}
 		return false;
 	}
+
+	// function to calculate Diversity value
+	public static double calcDiversity (Population p) {
+		// length of the diagonal of the search space
+		int n              = p.list.get(0).x.length;
+		double l           = Math.sqrt(n * n + n * n);
+		int populationSize = p.list.size();
+
+		// average of TSP population
+		State avgState = Function.findAvgValue (p);
+		// calc diversity value
+		double result;
+
+		// calculate sum
+		double sum = 0;
+
+		Iterator iterator = p.list.iterator();
+
+		while (iterator.hasNext()) {
+
+			// loop each instance to update Bang Xac Suat
+			State instance = (State) iterator.next();
+
+			// sum of each instance
+			int sumChild = 0;
+			for (int i = 0; i < n - 1; i++) {
+				sumChild += Math.pow((instance.x[i] - avgState.x[i]), 2);
+			}
+
+			sum += Math.sqrt(sumChild);
+		} // end loop Population
+
+		result = (1.0/(l * populationSize)) * sum;
+
+		return result;
+	}
+
+	// function to predict average State
+	// based on xac suat xuat hien cua gen tai moi diem trong doan gen
+	public static State findAvgValue (Population p) {
+		// willing to set this to Constants
+		int n = p.list.get(0).x.length;
+
+		int[][] bangXacSuat = new int[n][n];
+
+		// loop all Population to get Bang Xac suat xuat hien cua cac gen
+
+		// loop each instance of Population
+		Iterator iterator = p.list.iterator();
+
+		while (iterator.hasNext()) {
+
+			// loop each instance to update Bang Xac Suat
+			State instance = (State) iterator.next();
+			for (int i = 0; i < n - 1; i++) {
+				int value = instance.x[i];
+				// update Bang Xac suat
+				bangXacSuat[value][i]++;
+			}
+		} // end loop Population
+
+		// get avgInstance from bang Xac suat
+
+
+		// State to keep result
+		State avgState = new State(n);
+
+		// get max value of bang xac suat
+		// take that value and remove that col from next check
+		boolean[] check = new boolean[n];
+
+		do {
+			// check array
+			// check[i] = true: col i is used
+
+			int[] result = getMaxValueTable(bangXacSuat, check);
+			if (result[2] == 0) {
+				Function.fillState(avgState);
+				break;
+			}
+			check[result[1]] = true;
+			avgState.x[result[1]] = result[0];
+
+			// set apperance of max value to 0
+			// because it value doesn't appear in avgState again
+			// all row of that max value set to 0 in bangXacSuat
+			for (int i = 0; i < n; i++ ) {
+				bangXacSuat[result[0]][i] = 0;
+			}
+
+			// check Break Condition
+			// break if all col is check
+			boolean breakCondition = true;
+
+			for (int i = 0; i < n; i++) {
+				if (!check[i]) {
+					breakCondition = false;
+					break;
+				}
+			}
+
+			if (breakCondition)
+				break;
+		} while (true);
+
+		return avgState;
+	} // end func findAvgValue
+
+	// function fillState if maxVal = 0
+	// given: state
+	// process:
+	// loop over i to fill
+	// if i doesn't exists in state.array
+	// add it to array
+	public static void fillState (State state) {
+
+		int n = state.x.length;
+
+		for (int i = 0; i < n; i++) {
+
+			// check val
+			boolean check = true;
+			for (int j = 0; j < n; j++) {
+				if (state.x[j] == i)
+					check = false;
+			}
+
+			// check exists or not
+			// if true
+			// find first 0 and change it to i
+			if (check) {
+				for (int j = 0; j < n; j++) {
+					if (state.x[j] == 0)
+						state.x[j] = i;
+				}
+			}
+		}
+
+	} // end fill State
+
+	public static int[] getMaxValueTable (int[][] table, boolean[] check) {
+		int n = check.length;
+		int[] result = new int[3];
+
+		int maxValue = table[0][0];
+		int imax     = 0;
+		int jmax     = 0;
+
+		for (int i = 0; i < n - 1; i ++) {
+			for (int j = 0; j < n - 1; j ++) {
+				// if col is already used
+				if (check[j]) continue;
+
+				if (table[i][j] > maxValue) {
+					maxValue = table[i][j];
+					imax     = i;
+					jmax     = j;
+				}
+			}
+		}
+
+		result[0] = imax;
+		result[1] = jmax;
+		result[2] = maxValue;
+
+		return result;
+	} // end func getMaxValTable
 }
 
 
@@ -537,13 +779,7 @@ class Function {
 
 class Const {
 	static final int numberOfInstance = 100;
-	static final double HYBRID = 0.2;
-	static final double DELTA = 0.0001;
+	static final double HYBRID        = 0.2;
+	static final double DELTA         = 0.0001;
 	static final int numberGeneration = 10000;
 }
-
-
-
-
-
-
