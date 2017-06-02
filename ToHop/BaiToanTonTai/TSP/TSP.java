@@ -54,7 +54,7 @@ class Init {
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) {
 				if (i == j) {
-					a[i][j] = 10000;
+					a[i][j] = -1;
 				} else a[i][j] = (int) (Math.random() * 100);	
 			}
 		}
@@ -69,6 +69,7 @@ class Init {
 	}
 	
 	// initialize random combination State
+	// for population
 	public static void initRandomState (State state) {
 		int n = state.x.length;
 		List<Integer> list = new ArrayList<>();
@@ -98,6 +99,10 @@ class Population {
 	ArrayList<Mutation> mutations;
 	ArrayList<Hybrid> 	hybrids;
 	
+	// number generation
+	// for terminate condition
+	int                 numberGeneration;
+	
 	// initialize random state
 	public Population (int n) {
 		list 		= new ArrayList<>();
@@ -108,6 +113,7 @@ class Population {
 			State state = new State (n); Init.initRandomState (state);
 			list.add (state);
 		}
+		numberGeneration = 1;
 	}
 	 
 	// calculate TSP value of all instance 
@@ -115,13 +121,11 @@ class Population {
 	// avgTSP = avg (top 20 tspValue State of Population)
 	// easy = avg (all State);
 	public void calculateTSP (int[][] a) {
-		int length 	= this.list.size();
-		int sum 	= 0;
+		int length = this.list.size();
 		
 		// instance
 		for (int i = 0; i < length; i++) {
 			this.list.get(i).calculateTSP (a);
-			sum += this.list.get(i).tspValue;
 		}
 		
 
@@ -131,9 +135,11 @@ class Population {
 		int length = this.list.size();
 		int sum = 0;
 		Iterator iterator = this.list.iterator();
+		
 		while (iterator.hasNext()) {
 			State element = (State) iterator.next();
-			sum += element.tspValue;
+			if (element.tspValue == -1) length --;
+			else sum += element.tspValue;
 		}
 		
 		// Population
@@ -270,6 +276,8 @@ class Population {
 		this.select ();
 		this.calcAvgTSP (a);
 		
+		// increase number generation
+		this.numberGeneration ++;
 	}
 	
 	// get result
@@ -372,9 +380,14 @@ class State {
 		int n = this.x.length;
 		
 		for (int i = 0; i < n - 1; i++) {
+		    if (a[x[i]][x[i+1]] == -1) {
+		        tspValue = -1;
+		        break;
+		    }
 			tspValue += a[x[i]][x[i+1]];
 		}
-		tspValue += a[x[n-1]][x[0]];
+		if (tspValue == -1);
+		else tspValue += a[x[n-1]][x[0]];
 		
 		this.tspValue = tspValue;
 	}
@@ -461,7 +474,8 @@ class Function {
 	// terminate condition:
 	// delta < Constant.delta
 	public static boolean checkTerminate (Population population) {
-		if (population.delta < Const.DELTA) 
+		if (population.delta < Const.DELTA 
+		    && population.numberGeneration > Const. numberGeneration) 
 			return false;
 		return true;
 	}
