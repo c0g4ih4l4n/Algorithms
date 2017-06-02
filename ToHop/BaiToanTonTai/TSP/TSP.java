@@ -7,7 +7,7 @@ import java.util.*;
 public class TSP {
 
 	public static void main (String[] args) {
-		int n = 10;
+		int n     = 10;
 		int[][] a = new int[n][n];
 
 		Init.initCost (a, n);
@@ -170,13 +170,13 @@ class Population {
 		}
 
 		// Population
-		double oldAvgTSP 	= this.avgTSP;
-		this.avgTSP 	= (double) sum / length;
+		double oldAvgTSP = this.avgTSP;
+		this.avgTSP      = (double) sum / length;
 
 		if (oldAvgTSP == 0)
 			this.delta = this.avgTSP;
 		else
-			this.delta 		= oldAvgTSP - this.avgTSP;
+			this.delta = oldAvgTSP - this.avgTSP;
 	}
 
 	public void selectParent () {
@@ -341,13 +341,17 @@ class Mutation {
 	}
 
 	public State mutate () {
-		int n = this.instance.x.length;
+		int n       = this.instance.x.length;
 		State child = new State(n);
 		Random rand = new Random();
-		int point2 = rand.nextInt (n);
+		int point2  = rand.nextInt (n);
+
 		while (point2 < n / 2) {point2 = rand.nextInt (n);}
+
 		int point1 = rand.nextInt (point2);
+
 		while (point1 == 0) {point1 = rand.nextInt (point2);}
+
 		for (int i = 0; i < n; i++) {
 			child.x[i] = this.instance.x[i];
 		}
@@ -376,7 +380,7 @@ class Hybrid {
 		State child2 		= new State (n);
 
 		Random rand = new Random();
-		int point = rand.nextInt (n);
+		int point   = rand.nextInt (n);
 		while (point == 0 || point == n) {point = rand.nextInt (n);};
 
 		for (int i = 0; i < point; i++) {
@@ -431,7 +435,9 @@ class State {
 	public static void updateResult (State result, State newState) {
 		if (result.tspValue > newState.tspValue) {
 			int n = result.x.length;
+
 			for (int i = 0; i < n; i++) result.x[i] = newState.x[i];
+
 			result.tspValue = newState.tspValue;
 		}
 	}
@@ -440,12 +446,17 @@ class State {
 	public boolean nextState () {
 		int n = this.x.length;
 		int i = n - 1;
+
 		while (i > 0 && this.x[i-1] > this.x[i]) {i--;}
+
 		if (i <= 0) return false;
-		i = i - 1;
+
+		i     = i - 1;
 		int j = Function.findMinPosition(this.x, i);
+
 		Function.swap (this.x, i, j);
 		Function.reverse (this.x, i + 1);
+
 		return true;
 	}
 
@@ -454,6 +465,7 @@ class State {
 	public void print () {
 		System.out.print ("State : ");
 		int n = x.length;
+
 		for (int i = 0; i < n; i++) {
 			System.out.print (" " + x[i]);
 		}
@@ -470,17 +482,17 @@ class State {
 class Function {
 	public static void swap (int[] a, int i, int j) {
 		int temp = a[i];
-		a[i] = a[j];
-		a[j] = temp;
+		a[i]     = a[j];
+		a[j]     = temp;
 	}
 
 	// return value of position have value minimum greater than min
 	// start: positon start
 	public static int findMinPosition (int[] a, int start) {
-		int n = a.length;
+		int n      = a.length;
 		int minset = a[start];
-		int min = n;
-		int jmin = start + 1;
+		int min    = n;
+		int jmin   = start + 1;
 
 		for (int j = start + 1; j < n; j++) {
 			if (a[j] < min && a[j] > minset) {jmin = j; min = a[j];}
@@ -570,9 +582,9 @@ class Function {
 	// function to calculate Diversity value
 	public static float calcDiversity (Population p) {
 		// length of the diagonal of the search space
-		int l = Math.sqrt(n * n + n * n);
+		int l              = Math.sqrt(n * n + n * n);
 		int populationSize = p.list.size;
-		int n = 2;
+		int n              = 2;
 
 		// average of TSP population
 		State avgState = Function.findAvgVAlue (p);
@@ -665,8 +677,8 @@ class Function {
 		int[] result = new int[3];
 
 		int maxValue = table[0][0];
-		int imax = 0;
-		int jmax = 0;
+		int imax     = 0;
+		int jmax     = 0;
 
 		for (int i = 0; i < n - 1; i ++) {
 			for (int j = 0; j < n - 1; j ++) {
@@ -675,8 +687,8 @@ class Function {
 
 				if (table[i][j] > maxValue) {
 					maxValue = table[i][j];
-					imax = i;
-					jmax = j;
+					imax     = i;
+					jmax     = j;
 				}
 			}
 		}
@@ -694,7 +706,7 @@ class Function {
 
 class Const {
 	static final int numberOfInstance = 100;
-	static final double HYBRID = 0.2;
-	static final double DELTA = 0.0001;
+	static final double HYBRID        = 0.2;
+	static final double DELTA         = 0.0001;
 	static final int numberGeneration = 10000;
 }
