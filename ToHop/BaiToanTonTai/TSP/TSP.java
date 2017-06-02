@@ -50,10 +50,26 @@ public class TSP {
 		populationDGEA.calculateTSP (a);
 
 		loop = 0;
-		do {
+		mode = "Expolit";
+		float dlow, dhigh;
+		while (loop < 500) {
 			loop ++;
-			population.generate (a);
-		} while (loop < 500)
+
+			float diversityValue = calcDiversity (p);
+			if (diversityValue < dlow)
+				mode = "Explore";
+			else if (diversityValue > dhigh)
+				mode = "Exploit";
+
+			if (mode == "Exploit") {
+				// combine
+			} else {
+				// mutate
+			}
+			// calc population
+		}
+
+
 	}
 }
 
@@ -552,16 +568,40 @@ class Function {
 	}
 
 	// function to calculate Diversity value
-	public static float diversity (Population p) {
-		// average of TSP population
-		p.avgTSP;
+	public static float calcDiversity (Population p) {
 		// length of the diagonal of the search space
-		int l = Math.sqrt(n * n);
+		int l = Math.sqrt(n * n + n * n);
 		int populationSize = p.list.size;
 		int n = 2;
 
+		// average of TSP population
 		State avgState = Function.findAvgVAlue (p);
 
+		// calc diversity value
+		float result;
+
+		// calculate sum
+		float sum;
+
+		Iterator iterator = p.list.iterator();
+
+		while (iterator.hasNext()) {
+
+			// loop each instance to update Bang Xac Suat
+			State instance = (State) iterator.next();
+
+			// sum of each instance
+			int sumChild = 0;
+			for (int i = 0; i < n - 1; i++) {
+				sumChild += Math.pow((instance.x[i] - avgState.x[i]), 2);
+			}
+
+			sum += Math.sqrt(sumChild);
+		} // end loop Population
+
+		result = (1.0/(l * populationSize)) * sum;
+
+		return result;
 	}
 
 	// function to predict average State
@@ -575,14 +615,14 @@ class Function {
 		// loop all Population to get Bang Xac suat xuat hien cua cac gen
 
 		// loop each instance of Population
-		Iterator iterator = this.list.iterator();
+		Iterator iterator = p.list.iterator();
 
 		while (iterator.hasNext()) {
 
 			// loop each instance to update Bang Xac Suat
 			State instance = (State) iterator.next();
 			for (int i = 0; i < n - 1; i++) {
-				int value = instance[i];
+				int value = instance.x[i];
 				// update Bang Xac suat
 				bangXacSuat[value][i]++;
 			}
