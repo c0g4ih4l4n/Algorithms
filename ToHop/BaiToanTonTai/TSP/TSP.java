@@ -40,6 +40,7 @@ public class TSP {
 			loop ++;
 			population.generate (a);
 		} while (loop < 500);
+
 		System.out.println ("AVG TSP : " + population.avgTSP);
 		State resultGA = population.getBestState ();
 		resultGA.print();
@@ -52,21 +53,19 @@ public class TSP {
 		loop = 0;
 		mode = "Expolit";
 		float dlow, dhigh;
+		dlow  = 0.2f;
+		dhigh = 0.8f;
+
 		while (loop < 500) {
 			loop ++;
 
-			float diversityValue = calcDiversity (p);
+			float diversityValue = Function.calcDiversity (p);
 			if (diversityValue < dlow)
 				mode = "Explore";
 			else if (diversityValue > dhigh)
 				mode = "Exploit";
 
-			if (mode == "Exploit") {
-				// combine
-			} else {
-				// mutate
-			}
-			// calc population
+			populationDGEA.generateDEGA (mode);
 		}
 
 
@@ -308,12 +307,31 @@ class Population {
 	}
 
 
+	public void generateGenerationDEGA (int[][] a) {
+
+		this.generateGeneration ();
+
+
+
+	}
 	// generate next generation using DEGA
-	public void generateDEGA (int[][] a) {
-		int deversityValue = 0;
-		mode = "Exploit"
+	public void generateDEGA (String mode) {
+		this.selectParent ();
+		this.setGenerateMethod ();
 
+		if (mode == "Exploit") {
+			this.combine ();
+		}
+		else if (mode == "Explore") {
+			this.mutate ();
+		}
 
+		this.calculateTSP (a);
+		this.select ();
+		this.calcAvgTSP (a);
+
+		// increase number generation
+		this.numberGeneration ++;
 	}
 
 	// get result
@@ -659,6 +677,7 @@ class Function {
 			avgState.x[result[1]] = result[2];
 
 			// set apperance of max value to 0
+			// because it value doesn't appear in avgState again
 			// all row of that max value set to 0 in bangXacSuat
 			for (i = 0; i < n; i++ ) {
 				bangXacSuat[result[2]][i] = 0;
