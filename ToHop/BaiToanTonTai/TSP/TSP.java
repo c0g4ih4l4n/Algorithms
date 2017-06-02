@@ -32,18 +32,18 @@ public class TSP {
 
 
 		// use Population
-		// Population population = new Population (n);
-		// population.calculateTSP (a);
+		Population population = new Population (n);
+		population.calculateTSP (a);
 
 		int loop = 0;
-		// do {
-		// 	loop ++;
-		// 	population.generate (a);
-		// } while (loop < 500);
+		do {
+			loop ++;
+			population.generate (a);
+		} while (loop < 500);
 
-		// System.out.println ("AVG TSP : " + population.avgTSP);
-		// State resultGA = population.getBestState ();
-		// resultGA.print();
+		System.out.println ("AVG TSP : " + population.avgTSP);
+		State resultGA = population.getBestState ();
+		resultGA.print();
 
 
 		// use DGEA
@@ -56,10 +56,10 @@ public class TSP {
 		String mode;
 		mode = "Expolit";
 		double dlow, dhigh;
-		dlow  = 0.2f;
-		dhigh = 0.8f;
+		dlow  = 0.5;
+		dhigh = 2;
 
-		while (loop < 500) {
+		while (loop < 50000) {
 			loop ++;
 
 			double diversityValue = Function.calcDiversity (populationDGEA);
@@ -72,6 +72,9 @@ public class TSP {
 			populationDGEA.generateDEGA (mode, a);
 		}
 
+		System.out.println ("AVG TSP : " + populationDGEA.avgTSP);
+		State resultDEGA = populationDGEA.getBestState ();
+		resultDEGA.print();
 
 	}
 }
@@ -678,6 +681,10 @@ class Function {
 			// check[i] = true: col i is used
 
 			int[] result = getMaxValueTable(bangXacSuat, check);
+			if (result[2] == 0) {
+				Function.fillState(avgState);
+				break;
+			}
 			check[result[1]] = true;
 			avgState.x[result[1]] = result[0];
 
@@ -699,14 +706,44 @@ class Function {
 				}
 			}
 
-			System.out.println("loop");
-
 			if (breakCondition)
 				break;
 		} while (true);
 
 		return avgState;
 	} // end func findAvgValue
+
+	// function fillState if maxVal = 0
+	// given: state
+	// process:
+	// loop over i to fill
+	// if i doesn't exists in state.array
+	// add it to array
+	public static void fillState (State state) {
+
+		int n = state.x.length;
+
+		for (int i = 0; i < n; i++) {
+
+			// check val
+			boolean check = true;
+			for (int j = 0; j < n; j++) {
+				if (state.x[j] == i)
+					check = false;
+			}
+
+			// check exists or not
+			// if true
+			// find first 0 and change it to i
+			if (check) {
+				for (int j = 0; j < n; j++) {
+					if (state.x[j] == 0)
+						state.x[j] = i;
+				}
+			}
+		}
+
+	} // end fill State
 
 	public static int[] getMaxValueTable (int[][] table, boolean[] check) {
 		int n = check.length;
