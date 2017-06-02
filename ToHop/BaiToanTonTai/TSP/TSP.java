@@ -657,6 +657,13 @@ class Function {
 			int[] result = getMaxValueTable(bangXacSuat, check);
 			check[result[1]] = true;
 			avgState.x[result[1]] = result[2];
+
+			// set apperance of max value to 0
+			// all row of that max value set to 0 in bangXacSuat
+			for (i = 0; i < n; i++ ) {
+				bangXacSuat[result[2]][i] = 0;
+			}
+
 			// check Break Condition
 			// break if all col is check
 			boolean breakCondition = true;
