@@ -5,20 +5,20 @@ import java.util.*;
 // using loop
 
 public class TSP {
-	
+
 	public static void main (String[] args) {
 		int n = 10;
 		int[][] a = new int[n][n];
-		
+
 		Init.initCost (a, n);
-		
+
 
 
 		State loopState = new State (n);
 		Init.initState (loopState);
-		State result = new State (n); 
+		State result = new State (n);
 		Init.initState (result); result.calculateTSP (a);
-		
+
 
 		// loop all element
 		do {
@@ -26,15 +26,15 @@ public class TSP {
 			State.updateResult (result, loopState);
 		} while (loopState.nextState());
 		result.print();
-		
+
 		System.out.println ();
-		
+
 
 
 		// use Population
 		Population population = new Population (n);
 		population.calculateTSP (a);
-		
+
 		int loop = 0;
 		do {
 			loop ++;
@@ -47,39 +47,39 @@ public class TSP {
 }
 
 class Init {
-	
+
 	// init cost of each road
 	public static void initCost (int[][] a, int n) {
-	
+
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) {
 				if (i == j) {
 					a[i][j] = -1;
-				} else a[i][j] = (int) (Math.random() * 100);	
+				} else a[i][j] = (int) (Math.random() * 100);
 			}
 		}
 		// end init array Cost
 	}
-	
+
 	public static void initState (State state) {
 		int n = state.x.length;
 		for (int i = 0; i < n; i++) {
 			state.x[i] = i;
 		}
 	}
-	
+
 	// initialize random combination State
 	// for population
 	public static void initRandomState (State state) {
 		int n = state.x.length;
 		List<Integer> list = new ArrayList<>();
-		
+
 		// loop to add value to list and shuffle it
 		for (int i = 1; i < n; i++) {
 			list.add (i);
 		}
 		Collections.shuffle (list);
-		
+
 		// pass list was shuffled to State
 		state.x[0] = 0;
 		for (int i = 1; i < n; i++) {
@@ -90,7 +90,7 @@ class Init {
 
 
 class Population {
-	
+
 	ArrayList<State> 	list;
 	double 				avgTSP;
 	int 				m;
@@ -98,11 +98,11 @@ class Population {
 	ArrayList<State> 	parents;
 	ArrayList<Mutation> mutations;
 	ArrayList<Hybrid> 	hybrids;
-	
+
 	// number generation
 	// for terminate condition
 	int                 numberGeneration;
-	
+
 	// initialize random state
 	public Population (int n) {
 		list 		= new ArrayList<>();
@@ -115,43 +115,43 @@ class Population {
 		}
 		numberGeneration = 1;
 	}
-	 
-	// calculate TSP value of all instance 
-	// and tsp avg value of Population 
+
+	// calculate TSP value of all instance
+	// and tsp avg value of Population
 	// avgTSP = avg (top 20 tspValue State of Population)
 	// easy = avg (all State);
 	public void calculateTSP (int[][] a) {
 		int length = this.list.size();
-		
+
 		// instance
 		for (int i = 0; i < length; i++) {
 			this.list.get(i).calculateTSP (a);
 		}
-		
+
 
 	}
-	
+
 	public void calcAvgTSP (int[][] a) {
 		int length = this.list.size();
 		int sum = 0;
 		Iterator iterator = this.list.iterator();
-		
+
 		while (iterator.hasNext()) {
 			State element = (State) iterator.next();
 			if (element.tspValue == -1) length --;
 			else sum += element.tspValue;
 		}
-		
+
 		// Population
 		double oldAvgTSP 	= this.avgTSP;
 		this.avgTSP 	= (double) sum / length;
-		
-		if (oldAvgTSP == 0) 
+
+		if (oldAvgTSP == 0)
 			this.delta = this.avgTSP;
-		else 
+		else
 			this.delta 		= oldAvgTSP - this.avgTSP;
 	}
-	
+
 	public void selectParent () {
 		int size = this.list.size();
 		Comparator<State> comparator = new Comparator<State> () {
@@ -161,17 +161,17 @@ class Population {
 			}
 		};
 		Collections.sort (this.list, comparator);
-		
+
 		// copy top 40 elements to parents
 		// easy : all are top elements
 		for (int i = 0; i < 70; i++) {
 			this.parents.add (this.list.get(i));
 		}
-		
+
 		// random parent
 	}
-	
-	// set parent Mutation 
+
+	// set parent Mutation
 	// add to list Mutation and remove from parents
 	public void setMutation () {
 		Iterator iterator = this.parents.iterator();
@@ -181,23 +181,23 @@ class Population {
 			iterator.remove();
 		}
 	}
-	
+
 	// set Hybrid couple for combine
 	// from list parents after remove mutation
 	public void setHybrid () {
 		while (this.parents.size() > 1) {
 			State element = this.parents.get(0);
 			this.parents.remove (0);
-			
+
 			int numberHybrid = this.parents.size();
-			
+
 			Random rd = new Random();
 			int chosen;
 			if (numberHybrid == 1)
 				chosen = 0;
 			else
 				chosen = rd.nextInt (numberHybrid - 1);
-			
+
 			// set new Hybrid and add to list hybrid
 			// remove old hybrid
 			this.hybrids.add (new Hybrid (element, this.parents.get (chosen)));
@@ -209,13 +209,13 @@ class Population {
 		}
 
 	}
-	
+
 	public void setGenerateMethod () {
 		this.setMutation ();
 		this.setHybrid ();
 	}
-	
-	
+
+
 	// generate
 	public void mutate () {
 		Iterator iterator = mutations.iterator();
@@ -225,7 +225,7 @@ class Population {
 			this.list.add (child);
 		}
 	}
-	
+
 	public void combine () {
 		Iterator iterator = hybrids.iterator();
 		while (iterator.hasNext()) {
@@ -235,12 +235,12 @@ class Population {
 			this.list.add (children.get(1));
 		}
 	}
-	
+
 	public void generateGeneration () {
 		this.mutate ();
 		this.combine ();
 	}
-	
+
 	// Selection
 	public void select () {
 		// order list
@@ -252,7 +252,7 @@ class Population {
 			}
 		};
 		Collections.sort (this.list, comparator);
-		
+
 		// selection
 		int numberSelect 	= 0;
 		Iterator iterator 	= this.list.iterator();
@@ -266,7 +266,7 @@ class Population {
 			}
 		}
 	}
-	
+
 	// generate the next generation
 	public void generate (int[][] a) {
 		this.selectParent ();
@@ -275,16 +275,16 @@ class Population {
 		this.calculateTSP (a);
 		this.select ();
 		this.calcAvgTSP (a);
-		
+
 		// increase number generation
 		this.numberGeneration ++;
 	}
-	
+
 	// get result
 	public State getBestState () {
 		return this.list.get(0);
 	}
-	
+
 	public void print () {
 		Iterator iterator = this.list.iterator();
 		while (iterator.hasNext()) {
@@ -299,11 +299,11 @@ class Population {
 
 class Mutation {
 	State instance;
-	
+
 	public Mutation (State state) {
 		this.instance = state;
 	}
-	
+
 	public State mutate () {
 		int n = this.instance.x.length;
 		State child = new State(n);
@@ -327,37 +327,37 @@ class Mutation {
 class Hybrid {
 	State parent1;
 	State parent2;
-	
+
 	public Hybrid (State state1, State state2) {
 		this.parent1 = state1;
 		this.parent2 = state2;
 	}
-	
+
 	public List<State> combine () {
 		int n 				= parent1.x.length;
 		List<State> list 	= new ArrayList<State>();
 		State child1 		= new State (n);
 		State child2 		= new State (n);
-		
+
 		Random rand = new Random();
 		int point = rand.nextInt (n);
 		while (point == 0 || point == n) {point = rand.nextInt (n);};
-		
+
 		for (int i = 0; i < point; i++) {
 			child1.x[i] = parent1.x[i];
 			child2.x[i] = parent2.x[i];
 		}
-		
-		// Merge 
+
+		// Merge
 		Function.merge (child1, child2, point, parent1, parent2);
-		
-		
+
+
 		list.add (child1);
 		list.add (child2);
-		
+
 		return list;
 	}
-	
+
 }
 
 
@@ -370,15 +370,15 @@ class Hybrid {
 class State {
 	int[] x;
 	int tspValue = 0;
-	
+
 	public State (int n) {
 		this.x = new int[n];
 	}
-	
+
 	public void calculateTSP (int[][] a) {
 		int tspValue = 0;
 		int n = this.x.length;
-		
+
 		for (int i = 0; i < n - 1; i++) {
 		    if (a[x[i]][x[i+1]] == -1) {
 		        tspValue = -1;
@@ -388,10 +388,10 @@ class State {
 		}
 		if (tspValue == -1);
 		else tspValue += a[x[n-1]][x[0]];
-		
+
 		this.tspValue = tspValue;
 	}
-	
+
 	public static void updateResult (State result, State newState) {
 		if (result.tspValue > newState.tspValue) {
 			int n = result.x.length;
@@ -399,7 +399,7 @@ class State {
 			result.tspValue = newState.tspValue;
 		}
 	}
-	
+
 	// for loop all State
 	public boolean nextState () {
 		int n = this.x.length;
@@ -412,7 +412,7 @@ class State {
 		Function.reverse (this.x, i + 1);
 		return true;
 	}
-	
+
 
 	// Print Result
 	public void print () {
@@ -425,8 +425,8 @@ class State {
 		System.out.println();
 		System.out.println ("TSP Value : " + this.tspValue);
 	}
-	
-	
+
+
 }
 
 
@@ -437,7 +437,7 @@ class Function {
 		a[i] = a[j];
 		a[j] = temp;
 	}
-	
+
 	// return value of position have value minimum greater than min
 	// start: positon start
 	public static int findMinPosition (int[] a, int start) {
@@ -451,17 +451,17 @@ class Function {
 		}
 		return jmin;
 	}
-	
+
 	public static void reverse (int[] a, int start) {
 		int j = a.length - 1;
-		
+
 		int i = start;
 		while (i < j) {
 			Function.swap (a, i, j);
 			i++; j--;
 		}
 	}
-	
+
 	public static void reverse (int[] a, int start, int end) {
 		int i = start;
 		int j = end;
@@ -470,27 +470,27 @@ class Function {
 			i++; j--;
 		}
 	}
-	
+
 	// terminate condition:
 	// delta < Constant.delta
 	public static boolean checkTerminate (Population population) {
-		if (population.delta < Const.DELTA 
-		    && population.numberGeneration > Const. numberGeneration) 
+		if (population.delta < Const.DELTA
+		    && population.numberGeneration > Const. numberGeneration)
 			return false;
 		return true;
 	}
-	
+
 	public static void merge (State child1, State child2, int point, State parent1, State parent2) {
-		
+
 		Function.mergePart (child1, point, parent1, parent2);
 		Function.mergePart (child2, point, parent2, parent1);
 	}
-	
+
 	public static void mergePart (State child1, int point, State parent1, State parent2) {
 		int n = parent1.x.length;
 		int i = point;
 		int j = point;
-		
+
 		// put element to array if not duplicate
 		for (;j < n; j++) {
 			if (!Function.checkExistHead (parent2.x[j], child1.x, point)) {
@@ -498,9 +498,9 @@ class Function {
 				i++;
 			}
 		}
-		
+
 		// add missing number
-		// check value of element after point 
+		// check value of element after point
 		// of 2 array
 		// if each element in 1 doesn't appear in 2
 		// add it to array
@@ -510,9 +510,9 @@ class Function {
 			}
 		}
 
-		
+
 	}
-	
+
 	// check exist
 	public static boolean checkExistHead (int check, int[] arr, int point) {
 		for (int i = 0; i < point; i++) {
@@ -521,11 +521,11 @@ class Function {
 		}
 		return false;
 	}
-	
+
 	public static boolean checkExistEnd (int check, int[] arr, int point) {
 		int n = arr.length;
 		for (int i = point; i < n; i++) {
-			if (arr[i] == check) 
+			if (arr[i] == check)
 				return true;
 		}
 		return false;
