@@ -43,6 +43,17 @@ public class TSP {
 		System.out.println ("AVG TSP : " + population.avgTSP);
 		State resultGA = population.getBestState ();
 		resultGA.print();
+
+
+		// use DGEA
+		Population populationDGEA = new Population (n);
+		populationDGEA.calculateTSP (a);
+
+		loop = 0;
+		do {
+			loop ++;
+			population.generate (a);
+		} while (loop < 500)
 	}
 }
 
@@ -278,6 +289,15 @@ class Population {
 
 		// increase number generation
 		this.numberGeneration ++;
+	}
+
+
+	// generate next generation using DEGA
+	public void generateDEGA (int[][] a) {
+		int deversityValue = 0;
+		mode = "Exploit"
+
+
 	}
 
 	// get result
@@ -530,6 +550,103 @@ class Function {
 		}
 		return false;
 	}
+
+	// function to calculate Diversity value
+	public static float diversity (Population p) {
+		// average of TSP population
+		p.avgTSP;
+		// length of the diagonal of the search space
+		int l = Math.sqrt(n * n);
+		int populationSize = p.list.size;
+		int n = 2;
+
+		State avgState = Function.findAvgVAlue (p);
+
+	}
+
+	// function to predict average State
+	// based on xac suat xuat hien cua gen tai moi diem trong doan gen
+	public static State findAvgValue (Population p) {
+		// willing to set this to Constants
+		int n = 10;
+
+		int bangXacSuat[n][n];
+
+		// loop all Population to get Bang Xac suat xuat hien cua cac gen
+
+		// loop each instance of Population
+		Iterator iterator = this.list.iterator();
+
+		while (iterator.hasNext()) {
+
+			// loop each instance to update Bang Xac Suat
+			State instance = (State) iterator.next();
+			for (int i = 0; i < n - 1; i++) {
+				int value = instance[i];
+				// update Bang Xac suat
+				bangXacSuat[value][i]++;
+			}
+		} // end loop Population
+
+		// get avgInstance from bang Xac suat
+
+
+		// State to keep result
+		State avgState = new State();
+
+		// get max value of bang xac suat
+		// take that value and remove that col from next check
+		boolean[] check = new boolean[n];
+
+		do {
+			// check array
+			// check[i] = true: col i is used
+
+			int[] result = getMaxValueTable(bangXacSuat, check);
+			check[result[1]] = true;
+			avgState.x[result[1]] = result[2];
+			// check Break Condition
+			// break if all col is check
+			boolean breakCondition = true;
+
+			for (int i = 0; i < n; i++) {
+				if (!check[i])
+					breakCondition = false;
+			}
+
+			if (breakCondition)
+				break;
+		} while (true);
+
+		return avgState;
+	} // end func findAvgValue
+
+	public static int[] getMaxValueTable (int[][] table, boolean[] check) {
+		int[] result = new int[3];
+
+		int maxValue = table[0][0];
+		int imax = 0;
+		int jmax = 0;
+
+		for (int i = 0; i < n - 1; i ++) {
+			for (int j = 0; j < n - 1; j ++) {
+				// if col is already used
+				if (check[j]) continue;
+
+				if (table[i][j] > maxValue) {
+					maxValue = table[i][j];
+					imax = i;
+					jmax = j;
+				}
+			}
+		}
+
+		result[0] = imax;
+		result[1] = jmax;
+		result[2] = maxValue;
+
+		return result;
+	} // end func getMaxValTable
 }
 
 
@@ -541,9 +658,3 @@ class Const {
 	static final double DELTA = 0.0001;
 	static final int numberGeneration = 10000;
 }
-
-
-
-
-
-
