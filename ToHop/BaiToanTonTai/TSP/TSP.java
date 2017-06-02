@@ -32,40 +32,44 @@ public class TSP {
 
 
 		// use Population
-		Population population = new Population (n);
-		population.calculateTSP (a);
+		// Population population = new Population (n);
+		// population.calculateTSP (a);
 
 		int loop = 0;
-		do {
-			loop ++;
-			population.generate (a);
-		} while (loop < 500);
+		// do {
+		// 	loop ++;
+		// 	population.generate (a);
+		// } while (loop < 500);
 
-		System.out.println ("AVG TSP : " + population.avgTSP);
-		State resultGA = population.getBestState ();
-		resultGA.print();
+		// System.out.println ("AVG TSP : " + population.avgTSP);
+		// State resultGA = population.getBestState ();
+		// resultGA.print();
 
 
 		// use DGEA
 		Population populationDGEA = new Population (n);
 		populationDGEA.calculateTSP (a);
 
+
+
 		loop = 0;
+		String mode;
 		mode = "Expolit";
-		float dlow, dhigh;
+		double dlow, dhigh;
 		dlow  = 0.2f;
 		dhigh = 0.8f;
 
 		while (loop < 500) {
 			loop ++;
 
-			float diversityValue = Function.calcDiversity (p);
+			double diversityValue = Function.calcDiversity (populationDGEA);
+
 			if (diversityValue < dlow)
 				mode = "Explore";
 			else if (diversityValue > dhigh)
 				mode = "Exploit";
 
-			populationDGEA.generateDEGA (mode);
+			populationDGEA.generateDEGA (mode, a);
 		}
 
 
@@ -315,15 +319,17 @@ class Population {
 
 	}
 	// generate next generation using DEGA
-	public void generateDEGA (String mode) {
+	public void generateDEGA (String mode, int[][] a) {
 		this.selectParent ();
 		this.setGenerateMethod ();
 
 		if (mode == "Exploit") {
 			this.combine ();
+			System.out.println("Enter Expolit");
 		}
 		else if (mode == "Explore") {
 			this.mutate ();
+			System.out.println("Enter Explore");
 		}
 
 		this.calculateTSP (a);
@@ -598,20 +604,19 @@ class Function {
 	}
 
 	// function to calculate Diversity value
-	public static float calcDiversity (Population p) {
+	public static double calcDiversity (Population p) {
 		// length of the diagonal of the search space
-		int l              = Math.sqrt(n * n + n * n);
-		int populationSize = p.list.size;
-		int n              = 2;
+		int n              = p.list.get(0).x.length;
+		double l           = Math.sqrt(n * n + n * n);
+		int populationSize = p.list.size();
 
 		// average of TSP population
-		State avgState = Function.findAvgVAlue (p);
-
+		State avgState = Function.findAvgValue (p);
 		// calc diversity value
-		float result;
+		double result;
 
 		// calculate sum
-		float sum;
+		double sum = 0;
 
 		Iterator iterator = p.list.iterator();
 
@@ -638,9 +643,9 @@ class Function {
 	// based on xac suat xuat hien cua gen tai moi diem trong doan gen
 	public static State findAvgValue (Population p) {
 		// willing to set this to Constants
-		int n = 10;
+		int n = p.list.get(0).x.length;
 
-		int bangXacSuat[n][n];
+		int[][] bangXacSuat = new int[n][n];
 
 		// loop all Population to get Bang Xac suat xuat hien cua cac gen
 
@@ -662,7 +667,7 @@ class Function {
 
 
 		// State to keep result
-		State avgState = new State();
+		State avgState = new State(n);
 
 		// get max value of bang xac suat
 		// take that value and remove that col from next check
@@ -674,13 +679,13 @@ class Function {
 
 			int[] result = getMaxValueTable(bangXacSuat, check);
 			check[result[1]] = true;
-			avgState.x[result[1]] = result[2];
+			avgState.x[result[1]] = result[0];
 
 			// set apperance of max value to 0
 			// because it value doesn't appear in avgState again
 			// all row of that max value set to 0 in bangXacSuat
-			for (i = 0; i < n; i++ ) {
-				bangXacSuat[result[2]][i] = 0;
+			for (int i = 0; i < n; i++ ) {
+				bangXacSuat[result[0]][i] = 0;
 			}
 
 			// check Break Condition
@@ -688,9 +693,13 @@ class Function {
 			boolean breakCondition = true;
 
 			for (int i = 0; i < n; i++) {
-				if (!check[i])
+				if (!check[i]) {
 					breakCondition = false;
+					break;
+				}
 			}
+
+			System.out.println("loop");
 
 			if (breakCondition)
 				break;
@@ -700,6 +709,7 @@ class Function {
 	} // end func findAvgValue
 
 	public static int[] getMaxValueTable (int[][] table, boolean[] check) {
+		int n = check.length;
 		int[] result = new int[3];
 
 		int maxValue = table[0][0];
